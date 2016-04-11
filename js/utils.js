@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var jetpack = require('fs-jetpack');
+var colors = require('colors');
 
 var globalSettings = jetpack.read('./package.json', 'json');
 var cascadeSettings = globalSettings['specless-cascade'];
@@ -104,7 +105,39 @@ module.exports = {
 		packageJson["specless-cascade"].path = path;
 		jetpack.write('./package.json', packageJson);
 	},
+	openProject : function(path) {
+		if (this.validateProject(path) === true) {
+			var settings = this.get('projectSettings');
+			this.setCurrentProject(path);
+			settings.path = this.currentProject();
+			console.log(settings.path);
+			this.save('projectSettings', settings);
+		} else {
+			this.logError('Error opening this project', "The project located at '" + path + "' is not a valid Specless Cascade project. Default project opened instead.");
+			this.setCurrentProject('default');
+		}
+	},
 	validateProject : function(path) {
 		return true
+	},
+	logError : function(title, message) {
+		console.log('');
+		console.log(colors.red.bold(title));
+		console.log(colors.black.bold('ERROR MESSAGE:'));
+		console.log(message);
+		console.log('');
+	},
+	copyToPublishFolder : function() {
+		var project = this.get('projectSettings');
+		var cascade = this.get('cascadeSettings');
+		_.each(project.components, function(component) {
+			jetpack.copy(project.path, cascade.publishDir, { overwrite: 'yes' });
+			var htmlFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.html.fileName);
+			var cssFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.css.fileName);
+			var jsFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.js.fileName);
+			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.html', htmlFile);
+			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.css', cssFile);
+			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.js', jsFile);
+		})
 	}
 }

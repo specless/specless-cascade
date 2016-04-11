@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Compiles Specless Cascade html5 responsive rich media ads.",
   "main": "index.js",
-  "private": true,
   "scripts": {
     "test": "test"
   },
@@ -25,9 +24,11 @@
   "homepage": "https://github.com/specless/specless-cascade#readme",
   "devDependencies": {
     "autoprefixer": "^6.3.6",
+    "colors": "^1.1.2",
     "fs-jetpack": "^0.8.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
+    "gulp-plumber": "^1.1.0",
     "gulp-postcss": "^6.1.0",
     "gulp-prompt": "^0.2.0",
     "postcss-animation": "0.0.6",
@@ -59,6 +60,8 @@
     "path": "/Users/scorby/Dev/specless-cascade",
     "currentProjectDir": "default",
     "buildDir": "./build",
+    "publishDir": "./publish",
+    "publishCompiledDirName": ".output",
     "projectTemplateDir": "/projects/templates",
     "macIconPath": "/project-folder.icns",
     "baseTemplateDir": "/projects/templates/base",

@@ -1,26 +1,27 @@
 var postcss = require('gulp-postcss');
 var gulp = require('gulp');
 var _ = require('underscore');
+var plumber = require('gulp-plumber');
 var utils = require('../js/utils.js');
+
 
 gulp.task('css', function () {
 	var cascade = utils.get('cascadeSettings');
 	var settings = utils.get('projectSettings');
-	var projectFolder = settings.path;
 
 	var component = process.argv[3];
 	var glob;
 	if (component !== undefined) {
 		component = component.replace('--', '');
-		glob = [projectFolder + '/' + component + '/' + cascade.css.fileName];
+		glob = [settings.path + '/' + component + '/' + cascade.css.fileName];
 	} else {
-		glob = [projectFolder + '/**/' + cascade.css.fileName];
+		glob = [settings.path + '/**/' + cascade.css.fileName, '!' + settings.path + '/{' + cascade.assetsDirName + ',' + cascade.assetsDirName + '/**}'];
 	}
 
     var postcssBefore = [
     	require('postcss-import')({
     		root : './',
-    		path : projectFolder
+    		path : settings.path
     	}),
     	require('postcss-simple-vars'),
     	require('postcss-sassy-mixins'),
@@ -64,8 +65,8 @@ gulp.task('css', function () {
 	var postcssAfter = [
 		require('postcss-nested'),
 		require('postcss-easysprites')({
-			imagePath : projectFolder,
-			spritePath : projectFolder + '/' + cascade.assetsDirName
+			imagePath : settings.path,
+			spritePath : settings.path + '/' + cascade.assetsDirName
 		}),
 		require('postcss-calc'),
 		require('postcss-functions'),
@@ -81,6 +82,11 @@ gulp.task('css', function () {
 	var component;
     
     return gulp.src(glob)
+    	.pipe(plumber({
+    		errorHandler: function(error) {
+    			utils.logError("There was an error compiling your css!", error.message);
+    		}
+    	}))
         .pipe(postcss(postcssBefore))
         .pipe(postcss(postcssAfter))
         .pipe(gulp.dest(cascade.buildDir));

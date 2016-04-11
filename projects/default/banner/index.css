@@ -11,6 +11,10 @@ $myvar: 100px;
     }
 }
 
+[data-whatever="this'] {
+    face: off;
+}
+
 .whatever {
     @flowlane (80) {
         this: that;

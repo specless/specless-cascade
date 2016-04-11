@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var utils = require('./js/utils.js');
 var runSequence = require('run-sequence');
+var prompt = require('gulp-prompt');
 var Q = require('q');
 
 var thisPath = __dirname;
@@ -12,6 +13,7 @@ utils.updateCascadePath(thisPath);
 require('./tasks/clean');
 require('./tasks/open');
 require('./tasks/listen');
+require('./tasks/publish');
 require('./tasks/new');
 require('./tasks/html');
 require('./tasks/css');
