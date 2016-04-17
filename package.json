@@ -1,6 +1,6 @@
 {
   "name": "@specless/cascade",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Compiles Specless Cascade html5 responsive rich media ads.",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "url": "https://github.com/specless/specless-cascade/issues"
   },
   "homepage": "https://github.com/specless/specless-cascade#readme",
-  "devDependencies": {
+  "dependencies": {
     "autoprefixer": "^6.3.6",
     "colors": "^1.1.2",
     "directory-tree": "^0.1.1",
