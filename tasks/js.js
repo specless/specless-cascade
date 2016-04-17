@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var _ = require('underscore');
 var plumber = require('gulp-plumber');
+var rename = require('gulp-rename');
 var utils = require('../js/utils.js');
 
 gulp.task('js', function () {
@@ -11,8 +12,12 @@ gulp.task('js', function () {
 	return gulp.src(glob)
 		.pipe(plumber({
     		errorHandler: function(error) {
-    			utils.logError("There was an error compiling your javascript!", error.message);
+    			utils.sendMessage("failure", error.message, 1);
     		}
     	}))
-        .pipe(gulp.dest(cascade.buildDir));
+    	.pipe(rename(function (path) {
+		    path.basename = path.dirname;
+		    path.dirname = '';
+		}))
+        .pipe(gulp.dest(settings.path + '/' + cascade.buildDir));
 });

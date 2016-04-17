@@ -11,7 +11,7 @@ $myvar: 100px;
     }
 }
 
-[data-whatever="this'] {
+[data-whatever="this"] {
     face: off;
 }
 

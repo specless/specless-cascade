@@ -14,6 +14,6 @@ gulp.task('listen', ['build'], function () {
 	gulp.watch(cssFiles, ['css']);
 	gulp.watch(jsFiles, ['js']);
 
-	return "done"
+	return true
 
 });

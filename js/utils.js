@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var jetpack = require('fs-jetpack');
 var colors = require('colors');
+var directoryTree = require('directory-tree').directoryTree;
 
 var globalSettings = jetpack.read('./package.json', 'json');
 var cascadeSettings = globalSettings['specless-cascade'];
@@ -118,7 +119,56 @@ module.exports = {
 		}
 	},
 	validateProject : function(path) {
-		return true
+		var directory = directoryTree(path);
+		var project = this.get('projectSettings');
+		var cascade = this.get('cascadeSettings');
+
+		// Check for an assets folder, settings file and at least one component;
+		var hasAssets;
+		var hasSettings;
+		var components = [];
+
+		var assetsDir = cascade.assetsDirName;
+		var componentHtml = cascade.html.fileName;
+		var componentCss = cascade.css.fileName;
+		var componentJs = cascade.js.fileName;
+		var settingsPath = cascade.settingsFileName;
+
+		try {
+			_.each(directory.children, function(child) {
+				if (child.name === assetsDir && child.type === "directory") {
+					hasAssets = true;
+				} else if ( child.type === "directory") {
+					// Check if this is a component
+					var hasHtml;
+					var hasCss;
+					var hasJs;
+					_.each(child.children, function(file){
+						if (file.name === componentHtml) {
+							hasHtml = true;
+						} else if (file.name === componentCss) {
+							hasCss = true;
+						} else if (file.name === componentJs) {
+							hasJs = true;
+						}
+					});
+					if (hasHtml === true && hasCss === true && hasJs === true) {
+						var component = {name: child.name, plugins: [], assets: {}};
+						components.push(component);
+					}
+				} else if (child.type === "file" && child.name === settingsPath) {
+					hasSettings = true;
+				}
+			})
+		} catch (error) {
+			return false;
+		}
+
+		if (hasAssets === true && components.length > 0) {
+			return true;
+		} else {
+			return false;
+		}
 	},
 	logError : function(title, message) {
 		console.log('');
@@ -132,12 +182,15 @@ module.exports = {
 		var cascade = this.get('cascadeSettings');
 		_.each(project.components, function(component) {
 			jetpack.copy(project.path, cascade.publishDir, { overwrite: 'yes' });
-			var htmlFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.html.fileName);
-			var cssFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.css.fileName);
-			var jsFile = jetpack.read(project.path + '/' + component.name + '/' + cascade.js.fileName);
+			var htmlFile = jetpack.read(cascade.buildDir + '/' + component.name + '/' + cascade.html.fileName);
+			var cssFile = jetpack.read(cascade.buildDir + '/' + component.name + '/' + cascade.css.fileName);
+			var jsFile = jetpack.read(cascade.buildDir + '/' + component.name + '/' + cascade.js.fileName);
 			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.html', htmlFile);
 			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.css', cssFile);
 			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.js', jsFile);
 		})
+	},
+	sendMessage : function(type, message, code) {
+		console.log(type, message, code);
 	}
 }

@@ -1,10 +1,11 @@
 var gulp = require('gulp');
 var utils = require('../js/utils.js');
 var clean = require('gulp-clean');
-var cascade = utils.get('cascadeSettings');
 
 gulp.task('clean', function () {
-	utils.setCurrentProject('default');
-	return gulp.src([cascade.buildDir,cascade.publishDir], {read: false})
-		.pipe(clean());
+	var cascade = utils.get('cascadeSettings');
+	var project = utils.get('projectSettings');
+	console.log(project.path + '/' + cascade.buildDir);
+	return gulp.src([project.path + '/' + cascade.buildDir], {read: false})
+		.pipe(clean({force: true}));
 });

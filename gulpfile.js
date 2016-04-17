@@ -10,14 +10,19 @@ var thisPath = __dirname;
 
 utils.updateCascadePath(thisPath);
 
+require('./tasks/set-project');
 require('./tasks/clean');
-require('./tasks/open');
 require('./tasks/listen');
-require('./tasks/publish');
-require('./tasks/new');
 require('./tasks/html');
 require('./tasks/css');
 require('./tasks/js');
+require('./tasks/publish');
+require('./tasks/new');
+
+gulp.task('open', ['clean'], function () {
+	utils.openProject(utils.currentProject());
+	return true
+});
 
 gulp.task('build', function() {
 	var deferred = Q.defer();
@@ -31,6 +36,7 @@ gulp.task('build', function() {
 	return deferred.promise;
 });
 
-gulp.task('default', ['listen'], function () {
-
+gulp.task('start', ['listen'], function() {
+	var cascade = utils.get('cascadeSettings');
+    return true
 });
