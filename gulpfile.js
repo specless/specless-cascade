@@ -18,6 +18,7 @@ require('./tasks/css');
 require('./tasks/js');
 require('./tasks/publish');
 require('./tasks/new');
+require('./tasks/serve');
 
 gulp.task('open', ['clean'], function () {
 	utils.openProject(utils.currentProject());

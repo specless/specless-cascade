@@ -71,8 +71,7 @@ module.exports = {
 				name: component,
 				html: {},
 				css: {},
-				js: {},
-				assets: {}
+				js: {}
 			};
 			settingsObj.components.push(newComponent);
 		}
@@ -192,5 +191,83 @@ module.exports = {
 	},
 	sendMessage : function(type, message, code) {
 		console.log(type, message, code);
+	},
+	markComponent : function(type) {
+		function transform(file, cb) {
+			var prepend;
+			var component = file.relative.split('.')[0];
+			if (type === 'html') {
+				prepend = '<!-- ' + component + ' -->\n';
+			} else if (type === 'css' || type === 'js') {
+				prepend = '/* ' + component + ' */\n';
+			}
+		    file.contents = new Buffer(prepend + String(file.contents));
+		    cb(null, file);
+		}
+		return require('event-stream').map(transform);
+	},
+	getPlugins : function(type) {
+		var plugins = this.get('cascadeSettings').plugins;
+		var pluginsDir = '/node_modules/';
+		var matches = []
+		_.each(plugins, function(plugin) {
+			var pluginSettings = jetpack.read('.' + pluginsDir + plugin + '/package.json', 'json')['specless-cascade'];
+			_.each(pluginSettings.triggers, function(pluginItem) {
+				if (pluginItem.type === type) {
+					
+					var module = pluginItem;
+					module.parentPlugin = plugin;
+					if (module.tag === undefined && module.type === 'module') {
+						module.tag = 'div';
+					}
+					module.path = pluginsDir + module.parentPlugin
+					matches.push(module);
+				}
+			});
+		});
+		matches = _.uniq(matches);
+		return matches
+	}, 
+	addDeps : function(object, newObject, basePath) {
+		var cascade = this.get('cascadeSettings');
+		var whiteList = cascade.js.whiteListedDeps;
+		if (newObject) {
+    		if (newObject.css) {
+    			_.each(newObject.css, function(dep) {
+    				object.css.push(basePath + '/' + dep);
+    				object.css = _.uniq(object.css);
+    			});
+    		}
+    		if (newObject.jsPlugins) {
+    			_.each(newObject.jsPlugins, function(dep) {
+    				object.jsPlugins.push(basePath + '/' + dep);
+    				object.jsPlugins = _.uniq(object.jsPlugins);
+    			});
+    		}
+    		if (newObject.js) {
+    			_.each(newObject.js, function(dep) {
+    				var whiteListed = false;
+    				_.each(whiteList, function(script) {
+    					if (dep === script.name) {
+    						object.jsWhiteList.push(dep);
+    						object.jsWhiteList = _.uniq(object.jsWhiteList);
+    						whiteListed = true;
+    					}
+    				});
+    				if (whiteListed === false) {
+    					object.js.push(basePath + '/' + dep);
+    					object.js = _.uniq(object.js);
+    				}
+    			});
+    		}
+
+    		if (newObject.jsSnippets) {
+    			_.each(newObject.jsSnippets, function(dep) {
+    				object.jsSnippets.push(dep);
+    				object.jsSnippets = _.uniq(object.jsSnippets);
+    			});
+    		}
+    	}
+    	return object;
 	}
 }

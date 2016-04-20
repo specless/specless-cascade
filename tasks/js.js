@@ -3,6 +3,8 @@ var _ = require('underscore');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
 var utils = require('../js/utils.js');
+var processJs = require('../js/process-js.js');
+var beautify = require('gulp-beautify');
 
 gulp.task('js', function () {
 	var cascade = utils.get('cascadeSettings');
@@ -19,5 +21,7 @@ gulp.task('js', function () {
 		    path.basename = path.dirname;
 		    path.dirname = '';
 		}))
+		.pipe(processJs())
+		.pipe(beautify({indentSize: 4}))
         .pipe(gulp.dest(settings.path + '/' + cascade.buildDir));
 });

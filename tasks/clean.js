@@ -6,6 +6,6 @@ gulp.task('clean', function () {
 	var cascade = utils.get('cascadeSettings');
 	var project = utils.get('projectSettings');
 	console.log(project.path + '/' + cascade.buildDir);
-	return gulp.src([project.path + '/' + cascade.buildDir], {read: false})
+	return gulp.src([project.path + '/' + cascade.buildDir, cascade.publishDir], {read: false})
 		.pipe(clean({force: true}));
 });

@@ -1,6 +1,6 @@
 {
   "name": "@specless/cascade",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Compiles Specless Cascade html5 responsive rich media ads.",
   "main": "index.js",
   "scripts": {
@@ -26,13 +26,19 @@
     "autoprefixer": "^6.3.6",
     "colors": "^1.1.2",
     "directory-tree": "^0.1.1",
+    "express": "^4.13.4",
     "fs-jetpack": "^0.8.0",
     "gulp": "^3.9.1",
+    "gulp-beautify": "^2.0.0",
     "gulp-clean": "^0.3.2",
+    "gulp-html-prettify": "0.0.1",
     "gulp-plumber": "^1.1.0",
     "gulp-postcss": "^6.1.0",
+    "gulp-posthtml": "^1.5.2",
     "gulp-prompt": "^0.2.0",
     "gulp-rename": "^1.2.2",
+    "gulp-zip": "^3.2.0",
+    "handlebars": "^4.0.5",
     "postcss-animation": "0.0.6",
     "postcss-aspect-ratio": "^1.0.0",
     "postcss-assets": "^4.0.1",
@@ -73,10 +79,11 @@
     "currentProjectDir": "/Users/scorby/Dev/defaultCascadeProjectTest",
     "buildDir": ".output",
     "publishDir": "./publish",
+    "plugins": [
+      "specless-cascade-core"
+    ],
     "publishCompiledDirName": ".output",
-    "projectTemplateDir": "/projects/templates",
     "macIconPath": "/project-folder.icns",
-    "baseTemplateDir": "/projects/templates/base",
     "defaultProjectDir": "/projects/default",
     "errorProjectDir": "/projects/error",
     "settingsFileName": "ad.json",
@@ -109,6 +116,7 @@
     "css": {
       "fileName": "index.css",
       "pluginsDir": "./plugins/css",
+      "templateFilePath": "/css/base.css",
       "globalFileName": "global-styles.css",
       "syntax": {
         "contexts": [
@@ -151,21 +159,28 @@
         "flowlaneDefine": "define-flowlane",
         "breakpoint": "breakpoint",
         "defaultBreakpointType": "max"
-      }
+      },
+      "normalizeDir": "/css/normalize",
+      "normalize": [
+        {
+          "tag": "div",
+          "css": "a.css"
+        }
+      ]
     },
     "html": {
       "fileName": "index.html",
       "plugins": "./plugins/html",
-      "templateFilePath": "./templates/component.html",
+      "templateFilePath": "/templates/component.html",
       "syntax": {
-        "elementPrefix": "ad-",
+        "prefix": "ad-",
         "attributeFinalPrefix": "data-"
       }
     },
     "js": {
       "fileName": "index.js",
       "plugins": "./plugins/js",
-      "templateFilePath": "./templates/component.js",
+      "templateFilePath": "/templates/component.js",
       "whiteListedDeps": [
         {
           "name": "videojs",
