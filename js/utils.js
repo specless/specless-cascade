@@ -108,13 +108,14 @@ module.exports = {
 	openProject : function(path) {
 		if (this.validateProject(path) === true) {
 			var settings = this.get('projectSettings');
+			var cascade = this.get('cascadeSettings');
 			this.setCurrentProject(path);
 			settings.path = this.currentProject();
-			console.log(settings.path);
+			settings.name = this.currentProject().split('/').pop();
 			this.save('projectSettings', settings);
 		} else {
 			this.logError('Error opening this project', "The project located at '" + path + "' is not a valid Specless Cascade project. Default project opened instead.");
-			this.setCurrentProject('default');
+			this.setCurrentProject(cascade.path + cascade.defaultProjectDir);
 		}
 	},
 	validateProject : function(path) {
