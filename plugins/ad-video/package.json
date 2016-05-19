@@ -1,0 +1,38 @@
+{
+    "name": "video",
+    "version": "1.0.0",
+    "specless-cascade-plugin": {
+        "triggers": [
+        	{
+                "name": "video",
+                "type": "element",
+                "tag": "video",
+                "transformScript": "transform.js",
+                "dependencies": {
+                    "css": [
+                        "styles.css"
+                    ],
+                    "js": ["videojs", "jquery", "swiper", "ad-video", "ad-slider"]
+                },
+                "psuedoElements": [
+                    {
+                        "name": "close-button",
+                        "selector": "[data-element='close-button']"
+                    }
+                ],
+                "psuedoStates": [
+                    {
+                        "name": "playing",
+                        "selector": ".hovering"
+                    }
+                ],
+                "properties": [
+                    {
+                        "name": "close-button",
+                        "mixinName": "ad-component-close-button"
+                    }
+                ]
+            }
+        ]
+    }
+}

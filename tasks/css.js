@@ -7,6 +7,7 @@ var utils = require('../js/utils.js');
 
 
 gulp.task('css', function () {
+	utils.sendMessage("Command Receieved: Compile CSS", null, 1);
 	var cascade = utils.get('cascadeSettings');
 	var settings = utils.get('projectSettings');
 
@@ -26,8 +27,8 @@ gulp.task('css', function () {
     		path : settings.path
     	}),
     	require('../js/postcss-ad-elements')(),
+    	require('postcss-sassy-mixins')({silent: true}),
     	require('postcss-simple-vars'),
-    	require('postcss-sassy-mixins'),
     	require('postcss-atroot'),
     	require('postcss-simple-extend'),
     	require('postcss-conditionals'),
@@ -83,11 +84,13 @@ gulp.task('css', function () {
 	];
 
 	var component;
-    
+
+    var success = true;
     return gulp.src(glob)
     	.pipe(plumber({
     		errorHandler: function(error) {
-    			utils.sendMessage("failure", error.message, 1);
+    			utils.sendMessage("There was an error compiling your css.", error.message, 5);
+    			success = false;
     		}
     	}))
         .pipe(postcss(postcssBefore))
@@ -96,5 +99,12 @@ gulp.task('css', function () {
 		    path.basename = path.dirname;
 		    path.dirname = '';
 		}))
-        .pipe(gulp.dest(settings.path + '/' + cascade.buildDir));
+        .pipe(gulp.dest(settings.path + '/' + cascade.buildDir))
+        .on('end', function(err) {
+        	if (success === true) {
+        		utils.sendMessage("CSS Compiled successfully.", null, 4);
+        	}
+        	utils.sendMessage("Command Completed: Compile CSS", null, 1);
+        	success = true;
+        });
 });

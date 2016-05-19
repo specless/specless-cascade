@@ -4,25 +4,24 @@ var copy = require('gulp-contrib-copy');
 var utils = require('../js/utils.js');
 var fs = require('fs');
 var jetpack = require('fs-jetpack');
+var plumber = require('gulp-plumber');
 
 gulp.task('new', function () {
 	var cascade = utils.get('cascadeSettings');
+	utils.sendMessage("Command Receieved: Create New Project", null, 1);
 
-	var path, name;
-	_.each(process.argv, function(arg) {
-	   thisArg = arg.split('=');
-	   if (thisArg.length === 2) {
-		   	if (thisArg[0] === '--path') {
-		   		path = thisArg[1];
-		   	} else if (thisArg[0] === '--name') {
-		   		name = thisArg[1];
-		   	}
-	   }
-	});
+	var argv = require('yargs')
+      .demand(['path'])
+      .argv;
+    var path = argv.path;
+    var name = argv.name;
+
 	if (path === undefined) {
+		utils.sendMessage("You must provide a path for your new project.", null, 0);
 		console.error("You must provide a path for your new project.");
 		
 	} else if (name === undefined) {
+		utils.sendMessage("You must provide a name for your new project.", null, 0);
 		console.error("You must provide a name for your new project.");
 	}
 
@@ -43,15 +42,29 @@ gulp.task('new', function () {
 	var destination = path + '/' + name;
 	fs.access(destination, fs.F_OK, function(err) {
 	    if (!err) {
+	    	utils.sendMessage("The project '" + name + "' already exists here.", null, 3);
 	        console.error("The project '" + name + "' already exists here.");
 	    } else {
-	        return gulp.src(cascade.path + cascade.defaultProjectDir + '/**/*')
+	    	utils.sendMessage("Creating new project '" + name + "'.", null, 2);
+	    	fs.mkdirSync(destination);
+	        var success = true;
+	        return gulp.src(cascade.path + cascade.newProjectDir + '/**/*')
+	        	.pipe(plumber({
+		    		errorHandler: function(error) {
+		    			utils.sendMessage("There was an error creating your project.", error.message, 3);
+		    			success = false;
+		    		}
+		    	}))
 				.pipe(copy())
 				.pipe(rename(name))
-			    .pipe(gulp.dest(destination));
-			// var settings = jetpack.read(destination + '/' + cascade.settingsFileName, 'json');
-			// settings.name = name;
-			// jetpack.write(destination + '/' + cascade.settingsFileName, settings);
+			    .pipe(gulp.dest(destination))
+			    .on('end', function(err) {
+		        	if (success === true) {
+		        		utils.sendMessage("New Project successfully created at '" + path + "'.", null, 2);
+		        	}
+		        	utils.sendMessage("Command Completed: Create New Project", null, 1);
+		        	success = true;
+		        });
 	    }
 	});
 });

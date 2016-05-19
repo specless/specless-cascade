@@ -1,6 +1,6 @@
 {
   "name": "@specless/cascade",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Compiles Specless Cascade html5 responsive rich media ads.",
   "main": "index.js",
   "scripts": {
@@ -62,13 +62,14 @@
     "postcss-simple-vars": "^1.2.0",
     "q": "^1.4.1",
     "run-sequence": "^1.1.5",
+    "socket.io": "^1.4.5",
     "underscore": "^1.8.3",
-    "yargs": "^4.4.0"
+    "yargs": "^4.6.0"
   },
   "specless-cascade": {
     "csfVersion": 623,
     "path": "/Users/scorby/Dev/specless-cascade",
-    "serverPort": 8787,
+    "serverPort": "8789",
     "autoReload": {
       "all": true,
       "html": true,
@@ -76,15 +77,17 @@
       "js": true,
       "assets": true
     },
-    "userPluginsFolder": null,
-    "currentProjectDir": "/Users/scorby/Dev/defaultCascadeProjectTest/Untitled/Untitled",
+    "pluginsFolder": "/plugins",
+    "userPluginsFolder": "/Users/scorby/Library/Application Support/specless-cascade-dev/Plugins",
+    "currentProjectDir": "/Users/scorby/Dev/defaultCascadeProjectTest/test 6",
     "buildDir": ".output",
     "publishDir": "./publish",
     "plugins": [
-      "specless-cascade-core"
+      "ad-video"
     ],
     "publishCompiledDirName": ".output",
     "macIconPath": "/project-folder.icns",
+    "newProjectDir": "/projects/new",
     "defaultProjectDir": "/projects/default",
     "errorProjectDir": "/projects/error",
     "settingsFileName": "ad.json",
@@ -116,7 +119,6 @@
     "componentDirNamePrefix": "",
     "css": {
       "fileName": "index.css",
-      "pluginsDir": "./plugins/css",
       "templateFilePath": "/css/base.css",
       "globalFileName": "global-styles.css",
       "syntax": {
@@ -171,7 +173,6 @@
     },
     "html": {
       "fileName": "index.html",
-      "plugins": "./plugins/html",
       "templateFilePath": "/templates/component.html",
       "syntax": {
         "prefix": "ad-",
@@ -180,7 +181,6 @@
     },
     "js": {
       "fileName": "index.js",
-      "plugins": "./plugins/js",
       "templateFilePath": "/templates/component.js",
       "whiteListedDeps": [
         {
@@ -218,6 +218,18 @@
         {
           "name": "createjs",
           "url": "https://code.createjs.com/createjs-2015.11.26.min.js"
+        },
+        {
+          "name": "swiper",
+          "url": "csfplugins_623_vendor_swiper"
+        },
+        {
+          "name": "ad-video",
+          "url": "csfplugins_623_ad-video"
+        },
+        {
+          "name": "ad-slider",
+          "url": "csfplugins_623_ad-slider"
         }
       ],
       "syntax": {

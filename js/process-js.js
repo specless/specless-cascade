@@ -11,7 +11,7 @@ module.exports = function() {
 	function transform(file, cb) {
 		var userJs = String(file.contents);
 		var userJsTemplate = jetpack.read(cascade.path + cascade.js.templateFilePath);
-		var license = jetpack.read(cascade.path + '/license.txt');
+		var license = jetpack.read(cascade.path + '/LICENSE');
 		var component = file.relative.split('.')[0];
 		var dependencies;
 
@@ -61,12 +61,20 @@ module.exports = function() {
 		jsSnippets = jsSnippets.join('\n\n');
 		license = '/*\n' + license + '\n*/';
 		if (jsWhiteList.length === 0 ) {
-			jsWhiteList = 'none';
+			jsWhiteList = null;
 		} else {
-			jsWhiteList = "'" + jsWhiteList.join(',') + "'";
+			var csfPlugins = []
+			for (var i = jsWhiteList.length; i--; ) {
+				var testArray = jsWhiteList[i].split("sfplugins_");
+				if (testArray.length > 1) {
+					csfPlugins.push(jsWhiteList[i]);
+					jsWhiteList.splice(i, 1);
+				}
+			}
+			csfPlugins = csfPlugins.join(',');
+			jsWhiteList.push(csfPlugins);
+			jsWhiteList = "'" + jsWhiteList.join("','") + "'";
 		}
-
-
 
 		var data = {
 			userjs : userJs,

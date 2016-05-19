@@ -49,7 +49,9 @@ module.exports = {
 		var projectFolder = this.currentProject();
 		if (type === 'projectSettings') {
 			object.lastUpdated = this.timestamp();
+			object.cascadeVersion = jetpack.read('./package.json', 'json').version;
 			jetpack.write(projectFolder + '/' + cascadeSettings.settingsFileName, object);
+			this.sendMessage("Project settings updated.", null, 2);
 			return object
 		}
 	},
@@ -105,7 +107,7 @@ module.exports = {
 		packageJson["specless-cascade"].path = path;
 		jetpack.write('./package.json', packageJson);
 	},
-	openProject : function(path) {
+	openProject : function(path, callback) {
 		if (this.validateProject(path) === true) {
 			var settings = this.get('projectSettings');
 			var cascade = this.get('cascadeSettings');
@@ -113,9 +115,15 @@ module.exports = {
 			settings.path = this.currentProject();
 			settings.name = this.currentProject().split('/').pop();
 			this.save('projectSettings', settings);
+			if (callback) {
+				callback(true);
+			}
 		} else {
 			this.logError('Error opening this project', "The project located at '" + path + "' is not a valid Specless Cascade project. Default project opened instead.");
 			this.setCurrentProject(cascade.path + cascade.defaultProjectDir);
+			if (callback) {
+				callback(false);
+			}
 		}
 	},
 	validateProject : function(path) {
@@ -190,8 +198,19 @@ module.exports = {
 			jetpack.write(cascade.publishDir + '/' + cascade.publishCompiledDirName + '/' + component.name + '.js', jsFile);
 		})
 	},
-	sendMessage : function(type, message, code) {
-		console.log(type, message, code);
+	sendMessage : function(message, details, code) {
+		var messageLog = jetpack.read('./message-log.json', 'json');
+		var obj = {
+			message: message,
+			code: code,
+			details: details
+		}
+		messageLog.push(obj);
+		jetpack.write('./message-log.json', messageLog);
+		console.log('\x1b[36m%s\x1b[0m', '[SPECLESS CASCADE]', message);
+		if (details !== null && details !== undefined) {
+			console.log(details);
+		}
 	},
 	markComponent : function(type) {
 		function transform(file, cb) {
@@ -209,20 +228,20 @@ module.exports = {
 	},
 	getPlugins : function(type) {
 		var plugins = this.get('cascadeSettings').plugins;
-		var pluginsDir = '/node_modules/';
+		var pluginsDir = this.get('cascadeSettings').pluginsFolder + '/';
 		var matches = []
 		_.each(plugins, function(plugin) {
-			var pluginSettings = jetpack.read('.' + pluginsDir + plugin + '/package.json', 'json')['specless-cascade'];
+			var pluginSettings = jetpack.read('.' + pluginsDir + plugin + '/package.json', 'json')['specless-cascade-plugin'];
 			_.each(pluginSettings.triggers, function(pluginItem) {
 				if (pluginItem.type === type) {
 					
-					var module = pluginItem;
-					module.parentPlugin = plugin;
-					if (module.tag === undefined && module.type === 'module') {
-						module.tag = 'div';
+					var trigger = pluginItem;
+					trigger.parentPlugin = plugin;
+					if (trigger.tag === undefined && trigger.type === 'element') {
+						trigger.tag = 'div';
 					}
-					module.path = pluginsDir + module.parentPlugin
-					matches.push(module);
+					trigger.path = pluginsDir + trigger.parentPlugin;
+					matches.push(trigger);
 				}
 			});
 		});
@@ -235,13 +254,13 @@ module.exports = {
 		if (newObject) {
     		if (newObject.css) {
     			_.each(newObject.css, function(dep) {
-    				object.css.push(basePath + '/' + dep);
+    				object.css.push(cascade.path + basePath + '/' + dep);
     				object.css = _.uniq(object.css);
     			});
     		}
     		if (newObject.jsPlugins) {
     			_.each(newObject.jsPlugins, function(dep) {
-    				object.jsPlugins.push(basePath + '/' + dep);
+    				object.jsPlugins.push(cascade.path + basePath + '/' + dep);
     				object.jsPlugins = _.uniq(object.jsPlugins);
     			});
     		}
@@ -256,9 +275,23 @@ module.exports = {
     					}
     				});
     				if (whiteListed === false) {
-    					object.js.push(basePath + '/' + dep);
+    					var depPath = basePath + '/' + dep;
+    					var projectTest = depPath.split("$$$PROJECT$$$");
+    					if (projectTest.length > 1) {
+    						depPath = cascade.currentProjectDir + projectTest[1];
+    					} else {
+    						depPath = cascade.path + depPath;
+    					}
+    					object.js.push(depPath);
     					object.js = _.uniq(object.js);
     				}
+    			});
+    		}
+
+    		if (newObject.dataSources) {
+    			_.each(newObject.dataSources, function(dep) {
+    				object.dataSources.push(dep);
+    				object.dataSources = _.uniq(object.dataSources);
     			});
     		}
 
@@ -270,5 +303,20 @@ module.exports = {
     		}
     	}
     	return object;
-	}
+	},
+	snakeToCamel : function(s) {
+	    return s.replace(/(\-\w)/g, function(m){return m[1].toUpperCase();});
+	},
+	camelToSnake : function(str) {
+      return str.replace(/\W+/g, '-').replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
+    },
+    normalizeAttrValue : function (value) {
+    	if (value === '' || value === 'true') {
+    		value = true
+    	}
+    	if (value === 'false') {
+    		value = false
+    	}
+    	return value;
+    }
 }

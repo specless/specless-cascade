@@ -18,19 +18,35 @@ require('./tasks/css');
 require('./tasks/js');
 require('./tasks/publish');
 require('./tasks/new');
-require('./tasks/serve');
 
 gulp.task('open', ['clean'], function () {
-	utils.openProject(utils.currentProject());
-	return true
+	utils.sendMessage("Command Receieved: Open Project", null, 1);
+	var deferred = Q.defer();
+	utils.openProject(utils.currentProject(), function(success) {
+		if (success === true) {
+			utils.sendMessage("Project opened successfully.", null, 2);
+			utils.sendMessage("Command Completed: Open Project", null, 1);
+			deferred.resolve();
+		} else if (success === false) {
+			utils.sendMessage("There was an error opening this project.", null, 3);
+			utils.sendMessage("Command Completed: Open Project", null, 1);
+			deferred.reject();
+		}
+	});
+	return deferred.promise;
 });
 
 gulp.task('build', function() {
+	utils.sendMessage("Command Receieved: Build Project", null, 1);
 	var deferred = Q.defer();
 	runSequence('open', 'html', 'css', 'js', function(err) {
 		if (err) {
+			utils.sendMessage("There was an error building your project.", err.message, 3);
+			utils.sendMessage("Command Completed: Build Project", null, 1);
 			deferred.reject(new Error(err));
 		} else {
+			utils.sendMessage("Project built successfully.", null, 2);
+			utils.sendMessage("Command Completed: Build Project", null, 1);
 			deferred.resolve();
 		}
 	});
@@ -38,6 +54,5 @@ gulp.task('build', function() {
 });
 
 gulp.task('start', ['listen'], function() {
-	var cascade = utils.get('cascadeSettings');
-    return true
+	utils.sendMessage("Command Receieved: Start Cascade Compiler", null, 1);
 });

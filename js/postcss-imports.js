@@ -19,7 +19,7 @@ module.exports = postcss.plugin('plugin-custom-imports', function () {
     		if (file.component === component.name) {
     			if (component.html.dependencies.css) {
     				_.each(component.html.dependencies.css, function(dep) {
-    					var importRule = postcss.atRule({ name: 'import', params: '"' + cascade.path + dep + '"'})
+    					var importRule = postcss.atRule({ name: 'import', params: '"' + dep + '"'});
     					css.prepend(importRule);
     				});
     			}

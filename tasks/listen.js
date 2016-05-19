@@ -3,20 +3,26 @@ var utils = require('../js/utils.js');
 var _ = require('underscore');
 var express = require('express');
 var server = express();
+var httpService = require('http');
+var http = httpService.Server(server);
+var io = require('socket.io')(http);
 
 gulp.task('listen', ['build'], function () {
+	utils.sendMessage("Command Receieved: Start Server and Listen for Changes", null, 1);
 	var cascade = utils.get('cascadeSettings');
 	var settings = utils.get('projectSettings');
 
 	var htmlFiles = [settings.path + '/**/' + cascade.html.fileName, '!' + settings.path + '/{' + cascade.assetsDirName + ',' + cascade.assetsDirName + '/**}'];
 	var cssFiles = [settings.path + '/**/' + cascade.css.fileName, '!' + settings.path + '/{' + cascade.assetsDirName + ',' + cascade.assetsDirName + '/**}'];
 	var jsFiles = [settings.path + '/**/' + cascade.js.fileName, '!' + settings.path + '/{' + cascade.assetsDirName + ',' + cascade.assetsDirName + '/**}'];
+	var allFiles = [settings.path + '/**/*', '!' + settings.path + '/{' + cascade.buildDir + ',' + cascade.buildDir + '/**}'];
 
 	gulp.watch(htmlFiles, ['html']);
 	gulp.watch(cssFiles, ['css']);
 	gulp.watch(jsFiles, ['js']);
 
 	server.get('/', function (req, res) {
+		utils.sendMessage("Server: Opening Preview Interface", null, 2);
 		var width = 300;
 		var height = 250;
 		var previewPrefix = 'http://app.specless.io/preview/' + cascade.csfVersion + '?ad=000000&width=' + width + '&height=' + height + '#';
@@ -41,12 +47,26 @@ gulp.task('listen', ['build'], function () {
 	  	res.redirect(302, previewUrl);
 	});
 
+	server.get('/killme', function(req, res) {
+		utils.sendMessage("Server: Server Killed", null, 2);
+		res.send("Success. Cascade Server Killed.");
+		process.exit();
+	});
+	
+	io.on('connection', function(socket){
+		utils.sendMessage("Server: New Sockets Connection", null, 2);
+		gulp.watch(allFiles).on('change', function(file) {
+			utils.sendMessage("File Change: '" + file.path + "'", null, 2);
+			io.emit('file change',file);
+		});
+	});
+
 	server.use('/components', express.static(settings.path + '/' + cascade.buildDir));
 	server.use('/assets', express.static(settings.path + '/' + cascade.assetsDirName));
-	server.get('/settings', express.static(settings.path + '/' + cascade.settingsFileName));
+	server.use('/settings', express.static(settings.path + '/' + cascade.settingsFileName));
 
-	server.listen(cascade.serverPort, function () {
-			
+	http.listen(cascade.serverPort, function (err) {
+		utils.sendMessage("Server: Listening On Port: " + cascade.serverPort, null, 2);
 	});
 
 });
